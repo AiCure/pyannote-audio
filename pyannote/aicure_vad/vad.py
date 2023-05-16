@@ -31,15 +31,21 @@ def compute_vad(model, video_path, video_id=None, num_left=0, num_videos=1, thre
     # extract audio from video
     audio_path = f'{video_path[:-4]}.wav'
     delete_audio_file = not os.path.isfile(audio_path)
-    reencode_audio_to_wav(video_path, audio_path)
 
-    # compute vad probs
-    vad_prob = model(audio_path)
+    try: 
+        reencode_audio_to_wav(video_path, audio_path)
+        # compute vad probs
+        vad_prob = model(audio_path)
 
-    if delete_audio_file:
-        os.remove(audio_path)
+        if delete_audio_file:
+            os.remove(audio_path)
 
-    return pd.DataFrame({'voice_probability':vad_prob.data[:,0]})
+        return pd.DataFrame({'Frame' : [_ for _ in range(len(vad_prob.data[:,0]))],
+                            'voice_probability':vad_prob.data[:,0],
+                            'error_reason' : ['pass' for _ in range(len(vad_prob.data[:,0]))]
+                             })
+    except Exception:
+        return pd.DataFrame([])
 
 
 def process_videos_from_queue(q, model, lock, thread_id, output_dir):
