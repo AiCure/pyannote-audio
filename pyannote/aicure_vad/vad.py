@@ -36,11 +36,16 @@ def compute_vad(model, video_path, video_id=None, num_left=0, num_videos=1, thre
         reencode_audio_to_wav(video_path, audio_path)
         # compute vad probs
         vad_prob = model(audio_path)
+        # frame start and end
+        fs = [i * vad_prob.sliding_window.step for i in range(len(vad_prob.data))]
+        fe = [_ + vad_prob.sliding_window.duration for _ in fs]
 
         if delete_audio_file:
             os.remove(audio_path)
+        
 
-        return pd.DataFrame({'Frame' : [_ for _ in range(len(vad_prob.data[:,0]))],
+        return pd.DataFrame({'frame_start' : fs,
+                             'frame_end' : fe,
                             'voice_probability':vad_prob.data[:,0],
                             'error_reason' : ['pass' for _ in range(len(vad_prob.data[:,0]))]
                              })

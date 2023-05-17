@@ -60,6 +60,10 @@ vad_prob = vad(first_file['audio'])
 #vad_prob.labels = ['SPEECH']
 vad_prob
 
+# %% calculate left endpoint of each frame
+le = [i * vad_prob.sliding_window.step for i in range(len(vad_prob.data))]
+re = [_ + vad_prob.sliding_window.duration for _ in le]
+re[-1]
 # %%
 vad_bin = Binarize(onset = 0.5)
 speech = vad_bin(vad_prob)
