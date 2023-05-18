@@ -45,9 +45,11 @@ RUN pip install -r ./pyannote-audio/requirements.txt
 RUN pip install -e ./pyannote-audio
 
 # Uncomment for batch docker production
-# ENTRYPOINT ["python", "./pyannote-audio/pyannote/aicure_vad/run_vad.py"]
+ENTRYPOINT ["python", "./pyannote-audio/pyannote/aicure_vad/run_vad.py"]
 
 # Uncomment for batch docker testing
-RUN pip install pytest-cov
-ENTRYPOINT ["pytest", "./pyannote-audio/tests/aicure_vad_test.py"]
+# THIS CURRENTLY FAILS B/C OF RELATIVE PATH ISSUES AND B/C THE DOCKER CONTAINER
+# DOES NOT HAVE AWS CREDENTIALS
+# RUN pip install pytest-cov
+# ENTRYPOINT ["pytest", "./pyannote-audio/tests/aicure_vad_test.py"]
 
