@@ -23,7 +23,11 @@ class batch_job(ProcessJob):
             logger.info('Running VAD probability')
             # assumes model_path was given as a named parameter in batch_job instantiation
             # model_path = self.parameters['model_path']
-            process_directory(self.local_input_folder, self.local_output_folder, self.local_model, num_threads=1)
+            process_directory(self.local_input_folder, 
+                              self.local_output_folder, 
+                              self.local_model, 
+                              num_threads=1,
+                              output_format='parquet')
              
         except Exception as e:
             logger.error("Processing VAD probability failed: {}".format(e))  

@@ -53,7 +53,7 @@ def compute_vad(model, video_path, video_id=None, num_left=0, num_videos=1, thre
         return pd.DataFrame([])
 
 
-def process_videos_from_queue(q, model, lock, thread_id, output_dir):
+def process_videos_from_queue(q, model, lock, thread_id, output_dir, output_format='csv'):
     while len(q.video_ids) > 0:
         with lock:
             video_path = q.video_paths.popleft()
@@ -63,10 +63,14 @@ def process_videos_from_queue(q, model, lock, thread_id, output_dir):
         if Path(f'{output_dir}/{q.dataset_name}/vad/{video_id}.csv').is_file():
             continue
         df = compute_vad(model, video_path, video_id, num_left, num_videos, thread_id)
-        df.to_csv(f'{output_dir}/{q.dataset_name}/vad/{video_id}.csv', index=False)
+
+        if output_format == 'parquet':
+            df.to_parquet(f'{output_dir}/{q.dataset_name}/vad/{video_id}.parquet', index=False)
+        else:
+            df.to_csv(f'{output_dir}/{q.dataset_name}/vad/{video_id}.csv', index=False)
 
 
-def process_directory(video_dir, output_dir, model_path, num_threads=1):
+def process_directory(video_dir, output_dir, model_path, num_threads=1, output_format='csv'):
     lock = Lock()
     q = video_queue(video_dir, output_dir)
     
@@ -76,7 +80,8 @@ def process_directory(video_dir, output_dir, model_path, num_threads=1):
     
     threads = list()
     for thread_id in range(num_threads):
-        thread = Thread(target=process_videos_from_queue, args=(q, model, lock, thread_id, output_dir))
+        thread = Thread(target=process_videos_from_queue, 
+                        args=(q, model, lock, thread_id, output_dir, output_format))
         thread.start()
         threads.append(thread)
     for thread in threads:
